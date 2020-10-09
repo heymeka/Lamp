@@ -4,7 +4,7 @@
 #define NUM_LEDS 256
 #define DATA_PIN D2
 
-CRGB leds[NUM_LEDS];
+CRGB leds[NUM_LEDS], LastColor;
 
 CHSV RGB_to_HSV(CRGB color) {
   float fR = color.r, fG = color.g, fB = color.b;
@@ -81,7 +81,8 @@ CRGB HSV_to_RGB(float fH, float fS, float fV) {
   fR += fM;
   fG += fM;
   fB += fM;
-  return CRGB(fR, fG, fB);
+  LastColor = CRGB(fR, fG, fB);
+  return LastColor;
 }
 
 inline int get_matrix_number(int x)
@@ -100,14 +101,9 @@ inline int get_number(int line, int column)
 
 CRGB change_color(CHSV color)
 {
-  int h = color.h, v = color.v, s = color.s;
-  s += 10;
-  if(s > 100) 
-  {
-    s -= 100;
-    h += 10;
-    if(h > 359) h -= 359;
-  }
+  float h = color.h, v = color.v, s = color.s;
+  h += 10;
+  if(h > 359) h -= 359;
   return HSV_to_RGB(h, s, v);
 }
 
@@ -171,7 +167,7 @@ void setColor(int x, int y, CRGB start_color)
       while(q2.itemCount() > 0) 
         q1.enqueue(q2.dequeue());
       FastLED.show();
-      delay(250);
+      delay(50);
     }
   }
 }
@@ -180,16 +176,15 @@ void setup() {
     FastLED.addLeds<WS2812, DATA_PIN, GRB>(leds, NUM_LEDS);
     FastLED.setMaxPowerInVoltsAndMilliamps(5, 2000);
 //...................................................
-    FastLED.setBrightness(10);
+    FastLED.setBrightness(5);
     FastLED.clear();
     Serial.begin(9600);
     srand(time(NULL));
+    LastColor = CRGB(rand() % 256, rand() % 256, rand() % 256);
 //    FastLED.showColor(CRGB(253, 188, 180));
 }
 
 void loop() { 
-  delay(1000);
-  setColor(rand() % 16, rand() % 16, CRGB::Green);
-  delay(1000);
-  setColor(rand() % 16, rand() % 16, CRGB::Black);
+  setColor(rand() % 16, rand() % 16, LastColor);
+  setColor(rand() % 16, rand() % 16, LastColor);
 }
